@@ -51,53 +51,50 @@ def main():
         st.session_state.task_counter = 1
 
     for i in range(st.session_state.task_counter):
-    with st.form(key=f"form_{i}"):
-        st.markdown(f"### 업무 {i+1}")
+        with st.form(key=f"form_{i}"):
+            st.markdown(f"### 업무 {i+1}")
 
-        # 🔵 여기서 열 나누기 선언
-        cols = st.columns([4, 1])
+            # 🔵 열 나누기 (왼쪽 업무명, 오른쪽 기한 입력)
+            cols = st.columns([4, 1])
 
-        # 1. 업무명 입력
-        with cols[0]:
-            task_name = st.text_input("업무명 입력", key=f"task_{i}")
+            with cols[0]:
+                task_name = st.text_input("업무명 입력", key=f"task_{i}")
 
-        # 2. 기한 입력
-        with cols[1]:
-            due_days = st.text_input("기한 (X일)", key=f"due_{i}")
-            due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "기한 없음"
-            st.caption(f"예상 기한: {due_preview}")
+            with cols[1]:
+                due_days = st.text_input("기한 (일)", key=f"due_{i}")
+                due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "기한 없음"
+                st.caption(f"예상 기한: {due_preview}")
 
-        # 3. 추가업무 제안
-        suggested = []
-        if task_name:
-            for keyword, suggestions in subtask_suggestions.items():
-                if keyword in task_name:
-                    suggested = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_{i}")
-                    break
+            # 🔵 추가업무 제안
+            suggested = []
+            if task_name:
+                for keyword, suggestions in subtask_suggestions.items():
+                    if keyword in task_name:
+                        suggested = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_{i}")
+                        break
 
-        # 4. 저장 버튼
-        submitted = st.form_submit_button("업무 저장")
+            # 🔵 저장 버튼
+            submitted = st.form_submit_button("업무 저장")
 
-        if submitted:
-            assigned_to = assign_task(task_name)
-            task_data = {
-                "task_name": task_name,
-                "due_date": due_preview,
-                "sub_tasks": suggested,
-                "assigned_to": assigned_to,
-                "status": "pending",
-                "created_at": datetime.datetime.now().isoformat()
-            }
-            st.session_state.tasks.append(task_data)
-            st.success(f"업무 '{task_name}' 저장 완료! 담당자: {assigned_to}")
+            if submitted:
+                assigned_to = assign_task(task_name)
+                task_data = {
+                    "task_name": task_name,
+                    "due_date": due_preview,
+                    "sub_tasks": suggested,
+                    "assigned_to": assigned_to,
+                    "status": "pending",
+                    "created_at": datetime.datetime.now().isoformat()
+                }
+                st.session_state.tasks.append(task_data)
+                st.success(f"업무 '{task_name}' 저장 완료! 담당자: {assigned_to}")
 
-
-    # 업무 추가 버튼
+    # 🔵 추가 업무 입력 버튼
     st.button("+ 추가 업무 입력", on_click=lambda: st.session_state.update(task_counter=st.session_state.task_counter + 1))
 
     st.divider()
 
-    # 업무배정 실행 버튼
+    # 🔵 업무배정 실행 버튼
     if st.button("업무배정 실행"):
         if not st.session_state.tasks:
             st.error("입력된 업무가 없습니다.")
