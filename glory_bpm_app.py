@@ -1,5 +1,6 @@
 import streamlit as st
 import datetime
+import requests  # 🔵 Make Webhook 전송용
 
 st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="wide")
 
@@ -100,6 +101,30 @@ def main():
             st.error("입력된 업무가 없습니다.")
         else:
             st.success(f"총 {len(st.session_state.tasks)}건의 업무가 저장되었습니다.")
+
+            # 🔵 Make Webhook으로 업무 데이터 전송
+            webhook_url = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
+
+            for task in st.session_state.tasks:
+                message_payload = {
+                    "task_name": task["task_name"],
+                    "assigned_to": task["assigned_to"],
+                    "due_date": task["due_date"],
+                    "sub_tasks": task["sub_tasks"],
+                    "status": task["status"],
+                    "created_at": task["created_at"]
+                }
+
+                try:
+                    response = requests.post(webhook_url, json=message_payload)
+                    if response.status_code == 200:
+                        st.success(f"업무 '{task['task_name']}' 알림 전송 성공!")
+                    else:
+                        st.error(f"업무 '{task['task_name']}' 알림 실패 (Status: {response.status_code})")
+                except Exception as e:
+                    st.error(f"업무 '{task['task_name']}' 전송 중 오류 발생: {str(e)}")
+
+            # 🔵 업무 리스트 화면 출력
             for task in st.session_state.tasks:
                 st.write(f"업무명: {task['task_name']}")
                 st.write(f"담당자: {task['assigned_to']}")
@@ -109,3 +134,6 @@ def main():
                 else:
                     st.write("세부 업무: (없음)")
                 st.divider()
+
+if __name__ == "__main__":
+    main()
