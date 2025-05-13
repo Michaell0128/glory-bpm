@@ -1,6 +1,9 @@
 import streamlit as st
 import datetime
 
+st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="wide")
+
+
 # 휴일 리스트 (예시)
 holidays = []  # 예: [datetime.date(2025, 5, 15)] 형식으로 등록 가능
 
