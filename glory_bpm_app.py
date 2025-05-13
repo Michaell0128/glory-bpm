@@ -24,9 +24,9 @@ def calculate_due_date(days):
 
 def assign_task(task_name):
     task_name = task_name.lower()
-    if any(keyword in task_name for keyword in ["콘텐츠", "기획", "촬영 준비", "레시피", "sns", "마케팅", "분석", "보고서"]):
+    if any(keyword in task_name for keyword in ["콘텐츠", "기획", "촬영", "레시피", "sns", "마케팅", "숏폼", "롱폼"]):
         return "이윤성"
-    elif any(keyword in task_name for keyword in ["제품", "상품", "패키지", "촬영 세팅", "디자인", "편집", "영상"]):
+    elif any(keyword in task_name for keyword in ["제품", "상품", "패키지", "디자인", "편집", "영상", "IR", "로고"]):
         return "권희용"
     else:
         if len(task_name) <= 15:
