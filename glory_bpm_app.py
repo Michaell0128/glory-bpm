@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 
-st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="centered")
 
 # 휴일 리스트 (필요시 추가)
 holidays = []
