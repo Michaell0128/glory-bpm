@@ -66,7 +66,7 @@ for i in range(st.session_state.task_counter):
             task_name = st.text_input("업무명 입력", key=f"task_{i}")
 
         with cols[1]:
-            due_days = st.text_input("기한 입력 (X일, 비우면 기한 없음)", key=f"due_{i}")
+            due_days = st.text_input("기한 입력<br>(X일, 비우면 기한 없음)", key=f"due_{i}")
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "기한 없음"
             st.caption(f"예상 기한: {due_preview}")
 
