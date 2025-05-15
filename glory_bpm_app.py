@@ -69,7 +69,7 @@ for i in range(st.session_state.task_counter):
         with cols[1]:
             due_days = st.text_input("기한 입력", key=f"due_{i}")
             st.caption("(X일, 공백='기한 없음')")
-            due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "기한 없음"
+            due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
 
         suggested = []
