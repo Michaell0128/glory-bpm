@@ -69,16 +69,24 @@ def main():
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
 
-            suggested = []
-            if task_name:
+            # 버튼 2개 추가
+            confirm_clicked = st.form_submit_button("확인", key=f"confirm_{i}")
+            save_clicked = st.form_submit_button("업무 저장", key=f"save_{i}")
+
+            # [확인] 버튼 눌렀을 때 추가 제안 업무 보여주기
+            if confirm_clicked and task_name:
                 for keyword, suggestions in subtask_suggestions.items():
                     if keyword in task_name:
-                        if st.form_submit_button("확인", key=f"confirm_{i}"):
-                            suggested = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_{i}")
+                        st.session_state[f"suggestions_{i}"] = suggestions
                         break
 
-            # 저장 버튼
-            if st.form_submit_button("업무 저장", key=f"save_{i}"):
+            # 추가 제안 업무 선택 표시
+            suggestions = st.session_state.get(f"suggestions_{i}", [])
+            if suggestions:
+                st.session_state[f"sub_{i}"] = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_select_{i}")
+
+            # [업무 저장] 버튼 눌렀을 때 세션에 저장
+            if save_clicked:
                 assigned_to = assign_task(task_name)
                 sub_tasks = st.session_state.get(f"sub_{i}", [])
                 task_data = {
