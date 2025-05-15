@@ -5,7 +5,7 @@ import requests
 # 웹훅 URL (메이크 Webhook1 주소)
 WEBHOOK_URL = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
 
-st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="centered")
 
 # 세션 스테이트 초기화
 if 'tasks' not in st.session_state:
