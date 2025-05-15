@@ -58,51 +58,43 @@ def main():
 
     for i in range(st.session_state.task_counter):
         with st.container():
-            st.markdown(f"## 업무 {i+1}")
+            st.markdown(f"### 업무 {i+1}")
 
             cols = st.columns([3, 1])
 
             with cols[0]:
-                task_name = st.text_input("업무명 입력", key=f"task_{i}")
-                st.caption("(자유로운 문장으로 작성)")
-
+                task_name = st.text_input("업무명 입력\n(자유로운 문장으로 작성)", key=f"task_{i}")
             with cols[1]:
-                due_days = st.text_input("기한 입력", key=f"due_{i}")
-                st.caption("(X일, 공백=기한 없음)")
+                due_days = st.text_input("기한 입력\n(X일, 공백=기한 없음)", key=f"due_{i}")
 
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
 
-            confirm_clicked = st.button("확인", key=f"confirm_{i}")
-            save_clicked = st.button("업무 저장", key=f"save_{i}")
+            col_btn1, col_btn2 = st.columns(2)
 
-            suggested = []
-            if task_name:
-                for keyword, suggestions in subtask_suggestions.items():
-                    if keyword in task_name:
-                        suggested = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_{i}")
-                        break
+            with col_btn1:
+                if st.button("확인", key=f"confirm_{i}"):
+                    if task_name:
+                        for keyword, suggestions in subtask_suggestions.items():
+                            if keyword in task_name:
+                                st.session_state.confirmed_tasks[i] = suggestions
+                                break
+            with col_btn2:
+                if st.button("업무 저장", key=f"save_{i}"):
+                    assigned_to = assign_task(task_name)
+                    task_data = {
+                        "task_name": task_name,
+                        "due_date": due_preview,
+                        "sub_tasks": st.session_state.confirmed_tasks.get(i, []),
+                        "assigned_to": assigned_to,
+                        "status": "pending",
+                        "created_at": datetime.datetime.now().isoformat()
+                    }
+                    st.session_state.tasks.append(task_data)
+                    st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
 
-            if confirm_clicked:
-                st.session_state.confirmed_tasks[i] = {
-                    "task_name": task_name,
-                    "due_date": due_preview,
-                    "sub_tasks": suggested
-                }
-
-            if save_clicked:
-                confirmed = st.session_state.confirmed_tasks.get(i, {})
-                assigned_to = assign_task(task_name)
-                task_data = {
-                    "task_name": confirmed.get("task_name", task_name),
-                    "due_date": confirmed.get("due_date", due_preview),
-                    "sub_tasks": confirmed.get("sub_tasks", suggested),
-                    "assigned_to": assigned_to,
-                    "status": "pending",
-                    "created_at": datetime.datetime.now().isoformat()
-                }
-                st.session_state.tasks.append(task_data)
-                st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
+            if i in st.session_state.confirmed_tasks:
+                st.multiselect("추가 제안 업무 선택", st.session_state.confirmed_tasks[i], key=f"sub_select_{i}")
 
     if st.button("+ 추가 업무 입력"):
         st.session_state.task_counter += 1
@@ -123,7 +115,6 @@ def main():
                 else:
                     st.write("세부 업무: (없음)")
                 st.divider()
-            # 메이크 Webhook 호출
             webhook_url = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
             payload = {"tasks": st.session_state.tasks}
             try:
