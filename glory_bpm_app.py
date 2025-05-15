@@ -5,7 +5,7 @@ import requests
 # 페이지 설정
 st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="centered")
 
-# 휴일 리스트 (예시)
+# 휴일 리스트
 holidays = []
 
 # 세부 업무 추천 매칭표
@@ -55,6 +55,7 @@ def main():
 
     for i in range(st.session_state.task_counter):
         with st.container():
+            st.markdown("---")  # 박스 상단 테두리 효과
             st.markdown(f"### 업무 {i+1}")
 
             cols = st.columns([3, 1])
@@ -65,7 +66,7 @@ def main():
 
             with cols[1]:
                 due_days = st.text_input("기한 입력", key=f"due_{i}")
-                st.caption("(X일, 공백=기한 없음)")
+                st.caption("(X일, 비우면 기한 없음)")
 
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
@@ -100,9 +101,11 @@ def main():
                     key=f"sub_selectbox_{i}"
                 )
 
-    if st.button("+ 추가 업무 입력"):
+            st.markdown("---")  # 박스 하단 테두리 효과
+
+    # 추가 업무 입력 버튼
+    if st.button("+ 추가 업무 입력", key="add_task_button"):
         st.session_state.task_counter += 1
-        st.experimental_rerun()
 
     st.divider()
 
@@ -120,6 +123,7 @@ def main():
                 else:
                     st.write("세부 업무: (없음)")
                 st.divider()
+
             webhook_url = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
             payload = {"tasks": st.session_state.tasks}
             try:
