@@ -38,10 +38,7 @@ def assign_task(task_name):
     elif any(keyword in task_name for keyword in ["제품", "상품", "패키지", "촬영 세팅", "디자인", "편집", "영상"]):
         return "권희용"
     else:
-        if len(task_name) <= 15:
-            return "이윤성"
-        else:
-            return "권희용"
+        return "이윤성" if len(task_name) <= 15 else "권희용"
 
 # 메인 함수
 def main():
@@ -63,9 +60,12 @@ def main():
             cols = st.columns([3, 1])
 
             with cols[0]:
-                task_name = st.text_input("업무명 입력\n(자유로운 문장으로 작성)", key=f"task_{i}")
+                task_name = st.text_input("업무명 입력", key=f"task_{i}")
+                st.caption("(자유로운 문장으로 작성)")
+
             with cols[1]:
-                due_days = st.text_input("기한 입력\n(X일, 공백=기한 없음)", key=f"due_{i}")
+                due_days = st.text_input("기한 입력", key=f"due_{i}")
+                st.caption("(X일, 공백=기한 없음)")
 
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
@@ -85,7 +85,7 @@ def main():
                     task_data = {
                         "task_name": task_name,
                         "due_date": due_preview,
-                        "sub_tasks": st.session_state.confirmed_tasks.get(i, []),
+                        "sub_tasks": st.session_state.get(f"sub_select_{i}", []),
                         "assigned_to": assigned_to,
                         "status": "pending",
                         "created_at": datetime.datetime.now().isoformat()
@@ -94,10 +94,15 @@ def main():
                     st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
 
             if i in st.session_state.confirmed_tasks:
-                st.multiselect("추가 제안 업무 선택", st.session_state.confirmed_tasks[i], key=f"sub_select_{i}")
+                st.session_state[f"sub_select_{i}"] = st.multiselect(
+                    "추가 제안 업무 선택",
+                    st.session_state.confirmed_tasks[i],
+                    key=f"sub_selectbox_{i}"
+                )
 
     if st.button("+ 추가 업무 입력"):
         st.session_state.task_counter += 1
+        st.experimental_rerun()
 
     st.divider()
 
