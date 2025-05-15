@@ -63,10 +63,10 @@ for i in range(st.session_state.task_counter):
         cols = st.columns([3, 1])  # 업무명:기한 입력창 비율 설정
 
         with cols[0]:
-            task_name = st.text_input("업무명 입력", key=f"task_{i}")
+            task_name = st.text_input("업무명 입력\n(자유로운 문장으로 작성)", key=f"task_{i}")
 
         with cols[1]:
-            due_days = st.text_input("기한 입력 (X일, 비우면 기한 없음)", key=f"due_{i}")
+            due_days = st.text_input("기한 입력\n(X일, 공백='기한 없음')", key=f"due_{i}")
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "기한 없음"
             st.caption(f"예상 기한: {due_preview}")
 
