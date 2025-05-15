@@ -2,13 +2,13 @@ import streamlit as st
 import datetime
 import requests
 
-# 페이지 설정
+# 페이지 설정 (centered 유지)
 st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="centered")
 
-# 휴일 리스트
+# 휴일 리스트 (예시)
 holidays = []
 
-# 세부 업무 추천 매칭표
+# 세부 업무 추천 매칭표 (사용자 요청 버전)
 subtask_suggestions = {
     "콘텐츠": ["목차 작성", "경쟁사 분석", "타겟 설정"],
     "촬영": ["촬영 리스트 작성", "소품 준비", "숏폼 영상 촬영", "롱폼 영상 촬영", "제품 사진 촬영", "제품 홍보영상 촬영"],
@@ -18,6 +18,7 @@ subtask_suggestions = {
     "IR": ["기획", "제안서작성", "경쟁사 분석", "타겟 분석"]
 }
 
+# 기한 계산 함수
 def calculate_due_date(days):
     if not days:
         return "ASAP"
@@ -29,6 +30,7 @@ def calculate_due_date(days):
             days -= 1
     return today.strftime('%Y-%m-%d (%a)')
 
+# 담당자 배정 함수
 def assign_task(task_name):
     task_name = task_name.lower()
     if any(keyword in task_name for keyword in ["콘텐츠", "기획", "촬영", "레시피", "sns", "마케팅", "분석", "보고서"]):
@@ -38,6 +40,7 @@ def assign_task(task_name):
     else:
         return "이윤성" if len(task_name) <= 15 else "권희용"
 
+# 메인 함수
 def main():
     st.title("Glory BPM - 업무 입력")
 
@@ -49,8 +52,7 @@ def main():
 
     for i in range(st.session_state.task_counter):
         with st.container():
-            st.markdown(f"## 업무 {i+1}")
-
+            st.markdown(f"### 업무 {i+1}")
             cols = st.columns([3, 1])
 
             with cols[0]:
@@ -64,24 +66,24 @@ def main():
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
 
-            # 버튼 2개 (확인 / 업무 저장)
-            col1, col2 = st.columns(2)
-            with col1:
+            confirm_col, save_col = st.columns(2)
+            with confirm_col:
                 if st.button("확인", key=f"confirm_{i}"):
                     suggested = []
                     if task_name:
                         for keyword, suggestions in subtask_suggestions.items():
                             if keyword in task_name:
                                 suggested = st.multiselect("추가 제안 업무 선택", suggestions, key=f"sub_{i}")
+                                st.session_state[f"suggested_{i}"] = suggested
                                 break
-            with col2:
+
+            with save_col:
                 if st.button("업무 저장", key=f"save_{i}"):
                     assigned_to = assign_task(task_name)
-                    sub_tasks = st.session_state.get(f"sub_{i}", [])
                     task_data = {
                         "task_name": task_name,
                         "due_date": due_preview,
-                        "sub_tasks": sub_tasks,
+                        "sub_tasks": st.session_state.get(f"suggested_{i}", []),
                         "assigned_to": assigned_to,
                         "status": "pending",
                         "created_at": datetime.datetime.now().isoformat()
@@ -108,7 +110,7 @@ def main():
                 else:
                     st.write("세부 업무: (없음)")
                 st.divider()
-            # Webhook 전송
+            # 메이크 Webhook 호출
             webhook_url = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
             payload = {"tasks": st.session_state.tasks}
             try:
