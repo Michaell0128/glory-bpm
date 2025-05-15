@@ -105,7 +105,7 @@ def main():
 
     # 추가 업무 입력 버튼# 추가 업무 입력 버튼
     if st.button("+ 추가 업무 입력", key="add_task_button"):
-    st.session_state.task_counter = st.session_state.get('task_counter', 1) + 1
+        st.session_state.task_counter = st.session_state.get('task_counter', 1) + 1
 
     st.divider()
 
