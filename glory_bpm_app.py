@@ -49,68 +49,60 @@ def main():
 
     if 'tasks' not in st.session_state:
         st.session_state.tasks = []
-
     if 'task_counter' not in st.session_state:
         st.session_state.task_counter = 1
-
     if 'confirmed_tasks' not in st.session_state:
         st.session_state.confirmed_tasks = {}
-
     if 'suggestions' not in st.session_state:
         st.session_state.suggestions = {}
 
-    remove_task = False
-
     for i in range(st.session_state.task_counter):
-        with st.container():
-            with st.container(border=True):
-                st.markdown(f"### 업무 {i+1}")
-                cols = st.columns([3, 1])
+        with st.container(border=True):
+            st.markdown(f"### 업무 {i+1}")
+            cols = st.columns([3, 1])
+            with cols[0]:
+                task_name = st.text_input("업무명 입력", help="(자유로운 문장으로 작성)", key=f"task_{i}")
+            with cols[1]:
+                due_days = st.text_input("기한 입력", help="(X일, 비우면 기한 없음)", key=f"due_{i}")
 
-                with cols[0]:
-                    task_name = st.text_input("업무명 입력", help="(자유로운 문장으로 작성)", key=f"task_{i}")
-                with cols[1]:
-                    due_days = st.text_input("기한 입력", help="(X일, 비우면 기한 없음)", key=f"due_{i}")
+            due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
+            st.caption(f"예상 기한: {due_preview}")
 
-                due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
-                st.caption(f"예상 기한: {due_preview}")
+            col_btn1, col_btn2 = st.columns([1, 1])
+            with col_btn1:
+                if st.button("확인", key=f"confirm_{i}"):
+                    if task_name:
+                        for keyword, suggestions in subtask_suggestions.items():
+                            if keyword in task_name:
+                                st.session_state.suggestions[i] = suggestions
+                                break
+            with col_btn2:
+                if st.button("업무 저장", key=f"save_{i}"):
+                    assigned_to = assign_task(task_name)
+                    selected_subtasks = st.session_state.get(f"sub_select_{i}", [])
+                    task_data = {
+                        "task_name": task_name,
+                        "due_date": due_preview,
+                        "sub_tasks": selected_subtasks,
+                        "assigned_to": assigned_to,
+                        "status": "pending",
+                        "created_at": datetime.datetime.now().isoformat()
+                    }
+                    st.session_state.tasks.append(task_data)
+                    st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
 
-                col_btn1, col_btn2 = st.columns([1, 1])
-                with col_btn1:
-                    if st.button("확인", key=f"confirm_{i}"):
-                        if task_name:
-                            for keyword, suggestions in subtask_suggestions.items():
-                                if keyword in task_name:
-                                    st.session_state.suggestions[i] = suggestions
-                                    break
-
-                with col_btn2:
-                    if st.button("업무 저장", key=f"save_{i}"):
-                        assigned_to = assign_task(task_name)
-                        selected_subtasks = st.session_state.get(f"sub_select_{i}", [])
-                        task_data = {
-                            "task_name": task_name,
-                            "due_date": due_preview,
-                            "sub_tasks": selected_subtasks,
-                            "assigned_to": assigned_to,
-                            "status": "pending",
-                            "created_at": datetime.datetime.now().isoformat()
-                        }
-                        st.session_state.tasks.append(task_data)
-                        st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
-
-                if i in st.session_state.suggestions:
-                    st.multiselect("추가 제안 업무 선택", st.session_state.suggestions[i], key=f"sub_select_{i}")
+            if i in st.session_state.suggestions:
+                st.multiselect("추가 제안 업무 선택", st.session_state.suggestions[i], key=f"sub_select_{i}")
 
     col_add, col_remove = st.columns([1, 1])
     with col_add:
         if st.button("+ 추가 업무 입력"):
             st.session_state.task_counter += 1
-            st.experimental_rerun()
+            st.rerun()
     with col_remove:
         if st.button("업무 삭제") and st.session_state.task_counter > 1:
             st.session_state.task_counter -= 1
-            st.experimental_rerun()
+            st.rerun()
 
     st.divider()
 
