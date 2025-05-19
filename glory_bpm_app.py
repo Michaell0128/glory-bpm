@@ -5,7 +5,7 @@ import requests
 # 페이지 설정
 st.set_page_config(page_title="Glory BPM", page_icon="🚀", layout="centered")
 
-# 휴일 리스트
+# 휴일 리스트 (예시)
 holidays = []
 
 # 세부 업무 추천 매칭표
@@ -38,7 +38,10 @@ def assign_task(task_name):
     elif any(keyword in task_name for keyword in ["제품", "상품", "패키지", "촬영 세팅", "디자인", "편집", "영상"]):
         return "권희용"
     else:
-        return "이윤성" if len(task_name) <= 15 else "권희용"
+        if len(task_name) <= 15:
+            return "이윤성"
+        else:
+            return "권희용"
 
 # 메인 함수
 def main():
@@ -55,7 +58,10 @@ def main():
 
     for i in range(st.session_state.task_counter):
         with st.container():
-            st.markdown("---")  # 박스 상단 테두리 효과
+            st.markdown("""
+                <div style='border: 1px solid #444; border-radius: 10px; padding: 20px; margin-bottom: 20px;'>
+            """, unsafe_allow_html=True)
+
             st.markdown(f"### 업무 {i+1}")
 
             cols = st.columns([3, 1])
@@ -63,7 +69,6 @@ def main():
             with cols[0]:
                 task_name = st.text_input("업무명 입력", key=f"task_{i}")
                 st.caption("(자유로운 문장으로 작성)")
-
             with cols[1]:
                 due_days = st.text_input("기한 입력", key=f"due_{i}")
                 st.caption("(X일, 비우면 기한 없음)")
@@ -71,7 +76,7 @@ def main():
             due_preview = calculate_due_date(int(due_days)) if due_days.isdigit() else "ASAP"
             st.caption(f"예상 기한: {due_preview}")
 
-            col_btn1, col_btn2 = st.columns(2)
+            col_btn1, col_btn2 = st.columns([1, 1])
 
             with col_btn1:
                 if st.button("확인", key=f"confirm_{i}"):
@@ -80,13 +85,14 @@ def main():
                             if keyword in task_name:
                                 st.session_state.confirmed_tasks[i] = suggestions
                                 break
+
             with col_btn2:
                 if st.button("업무 저장", key=f"save_{i}"):
                     assigned_to = assign_task(task_name)
                     task_data = {
                         "task_name": task_name,
                         "due_date": due_preview,
-                        "sub_tasks": st.session_state.get(f"sub_select_{i}", []),
+                        "sub_tasks": st.session_state.confirmed_tasks.get(i, []),
                         "assigned_to": assigned_to,
                         "status": "pending",
                         "created_at": datetime.datetime.now().isoformat()
@@ -95,17 +101,17 @@ def main():
                     st.success(f"업무 '{task_data['task_name']}' 저장 완료! 담당자: {assigned_to}")
 
             if i in st.session_state.confirmed_tasks:
-                st.session_state[f"sub_select_{i}"] = st.multiselect(
-                    "추가 제안 업무 선택",
-                    st.session_state.confirmed_tasks[i],
-                    key=f"sub_selectbox_{i}"
-                )
+                st.multiselect("추가 제안 업무 선택", st.session_state.confirmed_tasks[i], key=f"sub_select_{i}")
 
-            st.markdown("---")  # 박스 하단 테두리 효과
+            st.markdown("""</div>""", unsafe_allow_html=True)
 
-    # 추가 업무 입력 버튼# 추가 업무 입력 버튼
-    if st.button("+ 추가 업무 입력", key="add_task_button"):
-        st.session_state.task_counter = st.session_state.get('task_counter', 1) + 1
+    col_add, col_remove = st.columns([1, 1])
+    with col_add:
+        if st.button("+ 추가 업무 입력", key="add_task_button"):
+            st.session_state.task_counter = st.session_state.get('task_counter', 1) + 1
+    with col_remove:
+        if st.button("- 업무 삭제", key="remove_task_button") and st.session_state.task_counter > 1:
+            st.session_state.task_counter -= 1
 
     st.divider()
 
@@ -123,7 +129,6 @@ def main():
                 else:
                     st.write("세부 업무: (없음)")
                 st.divider()
-
             webhook_url = "https://hook.eu2.make.com/spsrabuk655kpqb8hckd1dtt7v7a7nio"
             payload = {"tasks": st.session_state.tasks}
             try:
